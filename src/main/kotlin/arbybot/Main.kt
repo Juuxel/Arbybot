@@ -4,11 +4,11 @@ import arbybot.arby.Arbybot
 import arbybot.reactbot.Reactbot
 import arbybot.votebot.Votebot
 import com.mojang.brigadier.CommandDispatcher
-import org.javacord.api.DiscordApi
 import org.javacord.api.DiscordApiBuilder
 import org.javacord.api.entity.message.embed.EmbedBuilder
 import org.javacord.api.event.message.MessageCreateEvent
 import java.io.File
+import kotlin.system.exitProcess
 
 val bots = listOf(Arbybot, Votebot, Reactbot)
 
@@ -17,7 +17,7 @@ fun main(args: Array<String>) {
 
     if (!file.exists()) {
         System.err.println("The token file (arbybot_token.txt) does not exist!")
-        System.exit(1)
+        exitProcess(1)
     }
 
     if (args.isNotEmpty())
@@ -28,7 +28,7 @@ fun main(args: Array<String>) {
                 println("--help: Show this help message")
                 println("No arguments: Run Arbybot")
 
-                System.exit(0)
+                exitProcess(0)
             }
 
             "--license" -> {
@@ -39,7 +39,7 @@ fun main(args: Array<String>) {
                     .toArray()
                     .joinToString(separator = "\n"))
 
-                System.exit(0)
+                exitProcess(0)
             }
         }
 
@@ -64,10 +64,4 @@ fun main(args: Array<String>) {
     }
 
     println("Invite: ${api.createBotInvite()}")
-}
-
-
-@Deprecated("old")
-interface BotOld {
-    fun init(api: DiscordApi)
 }

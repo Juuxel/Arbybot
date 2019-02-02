@@ -4,7 +4,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     java
     kotlin("jvm") version "1.3.10"
-    id("com.github.johnrengelman.shadow") version "2.0.4"
+    id("com.github.johnrengelman.shadow") version "4.0.2"
+    application
 }
 
 group = "arbybot"
@@ -23,12 +24,17 @@ dependencies {
     implementation("com.mojang:brigadier:1.0.15")
 }
 
-tasks.withType<ShadowJar> {
+tasks.withType<Jar> {
     manifest {
         attributes["Main-Class"] = "arbybot.MainKt"
     }
 }
 
+application.mainClassName = "arbybot.MainKt"
+
+tasks.withType<JavaExec> {
+    workingDir = file("run").apply(File::mkdirs)
+}
 
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_1_8
