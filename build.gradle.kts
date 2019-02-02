@@ -8,17 +8,19 @@ plugins {
 }
 
 group = "arbybot"
-version = "1.0"
+version = "2.0"
 
 repositories {
     mavenCentral()
     jcenter()
+    maven(url = "https://libraries.minecraft.net")
 }
 
 dependencies {
-    compile(kotlin("stdlib-jdk8"))
-    compile("org.javacord:javacord:3.0.0")
-    compile("com.vdurmont:emoji-java:4.0.0")
+    implementation(kotlin("stdlib-jdk8"))
+    implementation("org.javacord:javacord:3.0.0")
+    implementation("com.vdurmont:emoji-java:4.0.0")
+    implementation("com.mojang:brigadier:1.0.15")
 }
 
 tasks.withType<ShadowJar> {

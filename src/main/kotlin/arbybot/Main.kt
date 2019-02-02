@@ -1,13 +1,16 @@
 package arbybot
 
 import arbybot.arby.Arbybot
-import arbybot.despairbot.Despairbot
+import arbybot.reactbot.Reactbot
 import arbybot.votebot.Votebot
+import com.mojang.brigadier.CommandDispatcher
 import org.javacord.api.DiscordApi
 import org.javacord.api.DiscordApiBuilder
+import org.javacord.api.entity.message.embed.EmbedBuilder
+import org.javacord.api.event.message.MessageCreateEvent
 import java.io.File
 
-val bots = listOf(Despairbot, Arbybot, Votebot)
+val bots = listOf(Arbybot, Votebot, Reactbot)
 
 fun main(args: Array<String>) {
     val file = File("./arbybot_token.txt")
@@ -43,11 +46,28 @@ fun main(args: Array<String>) {
     val token = file.readLines().first()
     val api = DiscordApiBuilder().setToken(token).login().join()
 
-    for (bot in bots) bot.init(api)
+    val dispatcher = CommandDispatcher<MessageCreateEvent>()
+
+    for (bot in bots) bot.init(dispatcher)
+
+    api.addMessageCreateListener {
+        if (it.message.content.startsWith("!")) {
+            try {
+                dispatcher.execute(it.message.content.substring(1), it)
+            } catch (e: Exception) {
+                it.channel.sendMessage(
+                    EmbedBuilder().setTitle("Error")
+                        .setDescription(e.message)
+                )
+            }
+        }
+    }
 
     println("Invite: ${api.createBotInvite()}")
 }
 
-interface Bot {
+
+@Deprecated("old")
+interface BotOld {
     fun init(api: DiscordApi)
 }

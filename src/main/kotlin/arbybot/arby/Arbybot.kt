@@ -1,11 +1,14 @@
 package arbybot.arby
 
 import arbybot.Bot
+import arbybot.util.ArgumentBuilders
 import arbybot.util.replace
 import arbybot.util.random
-import org.javacord.api.DiscordApi
+import com.mojang.brigadier.CommandDispatcher
+import com.mojang.brigadier.arguments.IntegerArgumentType
 import org.javacord.api.entity.channel.TextChannel
 import org.javacord.api.entity.message.embed.EmbedBuilder
+import org.javacord.api.event.message.MessageCreateEvent
 
 /**
  * Pure perfection.
@@ -52,7 +55,10 @@ object Arbybot : Bot {
         "but sometimes its part of you job being limited in what you can do\n%AnyPacifist needs to accept that",
         "there is loyalty to %AnyPacifist, not to the people, not to the parties",
         "the greatest thing about leaving is not seeing or hearing the %PacifistGroup absolutely stupid shittalk that's filled with inaccurcies and dream thinking. All in the name of good morality and muh \"pro-peace cooperation\" is actually not a steering the game. all of it gone, peace and quiet, no bs, no Jonesion, no speakers, no nothing, just emptiness, emptiness and joy. :smiley: :wave:",
-        "if that new amendment is real, you're all really pathetic and this game is a shitty waste of time, bye"
+        "if that new amendment is real, you're all really pathetic and this game is a shitty waste of time, bye",
+        "So we shouldn't have had a snap vote even if it stopped the razing of innocent civilians in Songhai?",
+        "we could make a law pushing the terms forward (and do that indefinately and keep power for eternity...muahahahhaha...wait)",
+        "This is what peak hypocrisy is\nRetro: no, this is the taste of your own medicine"
     ) + imageMessages
 
     private val pacifistPeople = listOf(
@@ -64,7 +70,8 @@ object Arbybot : Bot {
     private val pacifistGroups = listOf(
         "IFP", "PU", "pacifist conspiracy", "UoP", "L&U", "Order of Dao", "celestial party",
         "unelected moderation", "ministry", "old elite", "illuminati", "exec",
-        "FDC", "court", "supreme court", "Gentry of Friendship"
+        "FDC", "court", "supreme court", "Gentry of Friendship", "Communist Party", "Monarchist Party",
+        "ANP"
     )
 
     private val pacifistPersonTemplates = listOf(
@@ -98,7 +105,8 @@ object Arbybot : Bot {
         "https://cdn.discordapp.com/attachments/458808272539877377/464524678745292801/UnitedFront4.jpg",
         "https://cdn.discordapp.com/attachments/458808272539877377/463073299820183583/UnitedFront.jpg",
         "https://cdn.discordapp.com/attachments/458808272539877377/501632627846021140/SRPFlag.png",
-        "https://s3.amazonaws.com/lowres.cartoonstock.com/social-issues-pacifist-pacifism-proud-thugs-thuggish-rnen98_low.jpg"
+        "https://s3.amazonaws.com/lowres.cartoonstock.com/social-issues-pacifist-pacifism-proud-thugs-thuggish-rnen98_low.jpg",
+        "https://cdn.discordapp.com/attachments/468201679041593364/527228034164457494/srp.png"
     )
 
     private val urls = (listOf(
@@ -125,27 +133,27 @@ object Arbybot : Bot {
         "Arby, blessed be his name, he has graced us with his presence once more (Arby 1:1)"
     ) + catchphrases.mapIndexed { i, str -> "$str (Arby 2:${i + 1})" }
 
-    override fun init(api: DiscordApi) {
-        api.addMessageCreateListener {
-            when {
-                it.message.content.startsWith("!arby", ignoreCase = true) -> sendArby(it.channel)
-                it.message.content.startsWith("!rbimage", ignoreCase = true) -> sendImage(it.channel)
-                it.message.content.startsWith("!rbbynumber", ignoreCase = true) -> {
-                    val index = it.message.content.split(" ")[1].toInt()
-                    try {
-                        sendMessage(it.channel, listOf(catchphrases[index]))
-                    } catch (e: Exception) {
-                        it.channel.sendMessage(e.message)
-                    }
+    override fun init(dispatcher: CommandDispatcher<MessageCreateEvent>) {
+        dispatcher.register(
+            ArgumentBuilders.literal("arby").executes {
+                sendArby(it.source.channel)
+                1
+            }.then(ArgumentBuilders.literal("image").executes {
+                sendImage(it.source.channel)
+                1
+            }).then(ArgumentBuilders.literal("number").then(ArgumentBuilders.argument("id", IntegerArgumentType.integer(0, catchphrases.lastIndex))
+                .executes {
+                    sendMessage(it.source.channel, listOf(catchphrases[IntegerArgumentType.getInteger(it, "id")]))
+                    1
                 }
-
-                it.message.content.startsWith("!bookofarby", ignoreCase = true) -> sendMessage(it.channel, religion)
-            }
-        }
+            )).then(ArgumentBuilders.literal("book").executes {
+                sendMessage(it.source.channel, religion)
+                1
+            }))
     }
 
-    fun sendArby(channel: TextChannel) = sendMessage(channel, catchphrases)
-    fun sendImage(channel: TextChannel) = sendMessage(channel, imageMessages)
+    private fun sendArby(channel: TextChannel) = sendMessage(channel, catchphrases)
+    private fun sendImage(channel: TextChannel) = sendMessage(channel, imageMessages)
 
     private fun sendMessage(channel: TextChannel, source: List<String>) {
         val (message, image) = catchphraseReplace(source.random())
@@ -157,7 +165,7 @@ object Arbybot : Bot {
         )
     }
 
-    fun catchphraseReplace(str: String): Pair<String, String?> {
+    private fun catchphraseReplace(str: String): Pair<String, String?> {
         var url: String? = null
         return str.replace {
             "%BonusTarget" with bonusTargets
@@ -183,6 +191,4 @@ object Arbybot : Bot {
             "%BotName" with botNames
         } to url
     }
-
-    fun getRandomCatchphrase() = catchphraseReplace(catchphrases.random())
 }
