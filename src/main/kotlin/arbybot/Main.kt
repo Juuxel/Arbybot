@@ -51,13 +51,16 @@ fun main(args: Array<String>) {
     for (bot in bots) bot.init(dispatcher)
 
     api.addMessageCreateListener {
-        if (it.message.content.startsWith("!")) {
+        val msg = it.message.content
+        val commandName = msg.substring(1).split(" ")[0]
+        val hasCommand = dispatcher.root.getChild(commandName) != null
+
+        if (msg.startsWith("!") && hasCommand) {
             try {
-                dispatcher.execute(it.message.content.substring(1), it)
+                dispatcher.execute(msg.substring(1), it)
             } catch (e: Exception) {
                 it.channel.sendMessage(
-                    EmbedBuilder().setTitle("Error")
-                        .setDescription(e.message)
+                    EmbedBuilder().setTitle("Error").setDescription(e.message)
                 )
             }
         }
