@@ -24,6 +24,7 @@ object Votebot : Bot {
                 "parliament" in lowerCase -> true
                 "friendship" in lowerCase -> false
                 "legislat" in lowerCase -> true
+                "impeach arbybot" in lowerCase -> true
                 else -> voteOnString(lowerCase)
             }.let {
                 if (it) "Yea" else "Nay"
